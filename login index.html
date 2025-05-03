@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quebra-Cabeça As Aventuras de Zoe</title>
+    <style>
+        :root {
+            --primary-color: #006400;
+            --secondary-color: #8f94fb;
+            --accent-color: #ff6b6b;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --button-hover: #3a3f99;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            margin: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-color);
+        }
+        
+        .btn-accent:hover {
+            background-color: #ff5252;
+        }
+        
+        .puzzle-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1/1;
+            margin: 0 auto 20px;
+            background-color: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .puzzle-piece {
+            position: absolute;
+            background-size: cover;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            cursor: move;
+            transition: transform 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .puzzle-piece.correct {
+            border-color: rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+        
+        .level-selector {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        
+        .image-selector {
+            margin-bottom: 20px;
+        }
+        
+        .image-selector button {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 2px solid var(--primary-color);
+            margin: 5px;
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-selector button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .timer {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            animation: confetti-fall 3s linear forwards;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 80%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        
+        .modal p {
+            margin-bottom: 20px;
+        }
+        
+        .modal .btn {
+            margin-top: 10px;
+        }
+        
+        .credit {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Imagem de referência */
+        .reference-container {
+            margin-bottom: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .reference-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .reference-image.visible {
+            display: block;
+        }
+        
+        .toggle-reference {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 5px;
+        }
+        
+        .toggle-reference:hover {
+            background-color: var(--button-hover);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            
+            .reference-image {
+                max-width: 150px;
+                max-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quebra-Cabeça As Aventuras de Zoe</h1>
+        <p class="subtitle" style="font-weight: bold; color: black; font-size: 14px;">Divirta-se montando estas imagens!</p>
+        <p class="subtitle" style="font-weight: bold; color: black; font-size: 14px;">Como Jogar: Escolha uma imagem pelo número e o nível: fácil, médio, difícil ou muito difícil. Clique em "Iniciar" se for reiniciar tem que iniciar de novo também. joga-se arrastando com mouse as peças para montar, celular com os dedos, algumas peças podem ficar por baixo das outras, verifique para completar, click para ver a referência. Divirta-se!!</p>
+       
+        <div class="level-selector">
+            <label for="difficulty">Nível de Dificuldade:</label>
+            <select id="difficulty">
+                <option value="2">Fácil (2x2)</option>
+                <option value="3" selected>Médio (3x3)</option>
+                <option value="4">Difícil (4x4)</option>
+                <option value="5">Muito Difícil (5x5)</option>
+            </select>
+        </div>
+        
+        <div class="image-selector">
+            <h3>Escolha uma Imagem:</h3>
+            <div id="image-buttons"></div>
+        </div>
+        
+        <!-- Nova seção para a imagem de referência -->
+        <div class="reference-container">
+            <button class="toggle-reference" id="toggle-reference-btn">Mostrar Imagem de Referência</button>
+            <img id="reference-image" class="reference-image" alt="Imagem de referência">
+        </div>
+        
+        <div class="timer">Tempo: <span id="time">00:00</span></div>
+        
+        <div class="puzzle-container" id="puzzle-container"></div>
+        
+        <div class="controls">
+            <button class="btn" id="start-btn">Iniciar Jogo</button>
+            <button class="btn" id="reset-btn">Reiniciar</button>
+            <button class="btn btn-accent" id="solve-btn">Solução</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="victory-modal">
+        <div class="modal-content">
+            <h2>Parabéns!</h2>
+            <p>Você completou o quebra-cabeça em <span id="completion-time"></span>!</p>
+            <button class="btn" id="next-puzzle-btn">Próximo Quebra-Cabeça</button>
+            <button class="btn" id="close-modal-btn">Fechar</button>
+        </div>
+    </div>
+    <div style="text-align:center">
+    <div class="credit">Todos os Direitos © Quebra-Cabeça As Aventuras de Zoe </div>
+<font color="ffffff">
+     <div class="copyright"><p>Proibida a reprodução total, parcial ou compartilhamnto,</br> por qualquer meio, sem autorização expressa do autor. Lei nº 9.610/98 e Lei nº 12.965/14.</div></P>
+    </font>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurações do quebra-cabeça
+            const puzzleContainer = document.getElementById('puzzle-container');
+            const startBtn = document.getElementById('start-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const solveBtn = document.getElementById('solve-btn');
+            const difficultySelect = document.getElementById('difficulty');
+            const imageButtonsContainer = document.getElementById('image-buttons');
+            const victoryModal = document.getElementById('victory-modal');
+            const completionTimeSpan = document.getElementById('completion-time');
+            const nextPuzzleBtn = document.getElementById('next-puzzle-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const timeDisplay = document.getElementById('time');
+            
+            // Elementos da imagem de referência
+            const referenceImage = document.getElementById('reference-image');
+            const toggleReferenceBtn = document.getElementById('toggle-reference-btn');
+            let isReferenceVisible = false;
+            
+            // Variáveis do jogo
+            let pieces = [];
+            let correctPositions = [];
+            let size = 3;
+            let currentImage = 0;
+            let timer;
+            let seconds = 0;
+            let isPlaying = false;
+            let draggedPiece = null;
+            let startX, startY;
+            
+            // Use placeholders para as imagens - corrigido para URL único sem quebras de linha
+            const images = [];
+            for (let i = 1; i <= 1; i++) {
+                images.push('https://github.com/marciobignon/quebra-cabeca-zoe/blob/main/qb%20zoe_001.jpg?raw=true',
+'https://github.com/marciobignon/quebra-cabeca-zoe/blob/main/qb%20zoe_003.jpg?raw=true','https://github.com/marciobignon/quebra-cabeca-zoe/blob/main/qb%20zoe_002.jpg?raw=true','https://github.com/marciobignon/quebra-cabeca-zoe/blob/main/qb_zoe%20004.jpg?raw=true',
+'https://github.com/marciobignon/quebra-cabeca-zoe/blob/main/qb-%20zoe%20005.jpg?raw=true',
+);
+            }
+            
+            // Inicializar os botões de seleção de imagem
+            function initImageButtons() {
+                imageButtonsContainer.innerHTML = '';
+                images.forEach((img, index) => {
+                    const btn = document.createElement('button');
+                    btn.textContent = index + 1;
+                    btn.dataset.index = index;
+                    btn.addEventListener('click', () => selectImage(index));
+                    if (index === currentImage) {
+                        btn.classList.add('active');
+                    }
+                    imageButtonsContainer.appendChild(btn);
+                });
+                
+                // Atualizar a imagem de referência
+                updateReferenceImage();
+            }
+            
+            // Alternar a visibilidade da imagem de referência
+            function toggleReference() {
+                isReferenceVisible = !isReferenceVisible;
+                if (isReferenceVisible) {
+                    referenceImage.classList.add('visible');
+                    toggleReferenceBtn.textContent = 'Ocultar Imagem de Referência';
+                } else {
+                    referenceImage.classList.remove('visible');
+                    toggleReferenceBtn.textContent = 'Mostrar Imagem de Referência';
+                }
+            }
+            
+            // Atualizar a imagem de referência
+            function updateReferenceImage() {
+                referenceImage.src = images[currentImage];
+                
+                // Verifica se a imagem carregou corretamente
+                referenceImage.onload = function() {
+                    // A imagem carregou com sucesso
+                };
+                
+                referenceImage.onerror = function() {
+                    // Erro no carregamento da imagem
+                    console.log('Erro ao carregar a imagem de referência');
+                };
+            }
+            
+            // Selecionar uma imagem
+            function selectImage(index) {
+                currentImage = index;
+                const buttons = imageButtonsContainer.querySelectorAll('button');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                buttons[index].classList.add('active');
+                resetPuzzle();
+                
+                // Atualizar a imagem de referência
+                updateReferenceImage();
+            }
+            
+            // Iniciar o jogo
+            function startGame() {
+                if (isPlaying) return;
+                
+                isPlaying = true;
+                seconds = 0;
+                updateTimer();
+                
+                timer = setInterval(() => {
+                    seconds++;
+                    updateTimer();
+                }, 1000);
+                
+                size = parseInt(difficultySelect.value);
+                createPuzzle();
+                shufflePieces();
+            }
+            
+            // Atualizar o temporizador
+            function updateTimer() {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Criar as peças do quebra-cabeça
+            function createPuzzle() {
+                puzzleContainer.innerHTML = '';
+                pieces = [];
+                correctPositions = [];
+                
+                // Obter as dimensões reais do container
+                const containerWidth = puzzleContainer.clientWidth;
+                const containerHeight = puzzleContainer.clientHeight;
+                
+                const pieceWidth = containerWidth / size;
+                const pieceHeight = containerHeight / size;
+                
+                for (let row = 0; row < size; row++) {
+                    for (let col = 0; col < size; col++) {
+                        const piece = document.createElement('div');
+                        piece.className = 'puzzle-piece';
+                        piece.style.width = `${pieceWidth}px`;
+                        piece.style.height = `${pieceHeight}px`;
+                        
+                        // Configura a imagem para cobrir perfeitamente a peça
+                        piece.style.backgroundImage = `url(${images[currentImage]})`;
+                        piece.style.backgroundSize = `${containerWidth}px ${containerHeight}px`;
+                        piece.style.backgroundPosition = `-${col * pieceWidth}px -${row * pieceHeight}px`;
+                        
+                        // Salvar a posição correta
+                        correctPositions.push({
+                            row: row,
+                            col: col,
+                            top: row * pieceHeight,
+                            left: col * pieceWidth
+                        });
+                        
+                        // Adicionar a peça ao contêiner
+                        piece.dataset.row = row;
+                        piece.dataset.col = col;
+                        puzzleContainer.appendChild(piece);
+                        pieces.push(piece);
+                        
+                        // Adicionar eventos de arrasto
+                        piece.addEventListener('mousedown', startDrag);
+                        piece.addEventListener('touchstart', startDrag, {passive: false});
+                    }
+                }
+                
+                // Adicionar eventos de arrasto ao contêiner
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('touchmove', drag, {passive: false});
+                document.addEventListener('mouseup', endDrag);
+                document.addEventListener('touchend', endDrag);
+            }
+            
+            // Embaralhar as peças
+            function shufflePieces() {
+                // Criar uma cópia dos correctPositions e embaralhar
+                const shuffledPositions = [...correctPositions];
+                for (let i = shuffledPositions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledPositions[i], shuffledPositions[j]] = [shuffledPositions[j], shuffledPositions[i]];
+                }
+                
+                // Posicionar as peças aleatoriamente
+                pieces.forEach((piece, index) => {
+                    const position = shuffledPositions[index];
+                    piece.style.top = `${position.top}px`;
+                    piece.style.left = `${position.left}px`;
+                });
+                
+                // Verificar se o puzzle está resolvido por acaso
+                setTimeout(checkSolution, 500);
+            }
+            
+            // Iniciar o arrasto de uma peça
+            function startDrag(e) {
+                if (!isPlaying) return;
+                
+                // Impedir o comportamento padrão
+                e.preventDefault();
+                
+                // Obter a peça clicada
+                draggedPiece = e.target;
+                
+                // Obter as coordenadas iniciais
+                if (e.type === 'mousedown') {
+                    startX = e.clientX;
+                    startY = e.clientY;
+                } else if (e.type === 'touchstart') {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                }
+                
+                // Trazer a peça para a frente
+                draggedPiece.style.zIndex = '100';
+            }
+            
+            // Arrastar a peça
+            function drag(e) {
+                if (!draggedPiece || !isPlaying) return;
+                
+                // Impedir o comportamento padrão
+                e.preventDefault();
+                
+                // Obter as coordenadas atuais
+                let currentX, currentY;
+                if (e.type === 'mousemove') {
+                    currentX = e.clientX;
+                    currentY = e.clientY;
+                } else if (e.type === 'touchmove') {
+                    currentX = e.touches[0].clientX;
+                    currentY = e.touches[0].clientY;
+                }
+                
+                // Calcular a diferença
+                const dx = currentX - startX;
+                const dy = currentY - startY;
+                
+                // Obter a posição atual da peça
+                const pieceRect = draggedPiece.getBoundingClientRect();
+                const containerRect = puzzleContainer.getBoundingClientRect();
+                
+                // Calcular a nova posição
+                let newLeft = pieceRect.left - containerRect.left + dx;
+                let newTop = pieceRect.top - containerRect.top + dy;
+                
+                // Limitar a posição dentro do contêiner
+                newLeft = Math.max(0, Math.min(newLeft, containerRect.width - pieceRect.width));
+                newTop = Math.max(0, Math.min(newTop, containerRect.height - pieceRect.height));
+                
+                // Atualizar a posição da peça
+                draggedPiece.style.left = `${newLeft}px`;
+                draggedPiece.style.top = `${newTop}px`;
+                
+                // Atualizar as coordenadas iniciais
+                startX = currentX;
+                startY = currentY;
+            }
+            
+            // Finalizar o arrasto
+            function endDrag() {
+                if (!draggedPiece || !isPlaying) return;
+                
+                // Ajustar a posição para a grade
+                const containerWidth = puzzleContainer.clientWidth;
+                const containerHeight = puzzleContainer.clientHeight;
+                const pieceWidth = containerWidth / size;
+                const pieceHeight = containerHeight / size;
+                
+                const pieceRect = draggedPiece.getBoundingClientRect();
+                const containerRect = puzzleContainer.getBoundingClientRect();
+                
+                // Calcular a posição na grade
+                let col = Math.round((pieceRect.left - containerRect.left) / pieceWidth);
+                let row = Math.round((pieceRect.top - containerRect.top) / pieceHeight);
+                
+                // Limitar a posição dentro da grade
+                col = Math.max(0, Math.min(col, size - 1));
+                row = Math.max(0, Math.min(row, size - 1));
+                
+                // Atualizar a posição da peça
+                draggedPiece.style.left = `${col * pieceWidth}px`;
+                draggedPiece.style.top = `${row * pieceHeight}px`;
+                
+                // Redefinir a peça arrastada
+                draggedPiece.style.zIndex = '1';
+                draggedPiece = null;
+                
+                // Verificar se o puzzle está resolvido
+                checkSolution();
+            }
+            
+            // Verificar se o puzzle está resolvido
+            function checkSolution() {
+                if (!isPlaying) return;
+                
+                const containerWidth = puzzleContainer.clientWidth;
+                const containerHeight = puzzleContainer.clientHeight;
+                const pieceWidth = containerWidth / size;
+                const pieceHeight = containerHeight / size;
+                
+                let solved = true;
+                
+                pieces.forEach((piece) => {
+                    const row = parseInt(piece.dataset.row);
+                    const col = parseInt(piece.dataset.col);
+                    const top = parseInt(piece.style.top);
+                    const left = parseInt(piece.style.left);
+                    
+                    const correctTop = row * pieceHeight;
+                    const correctLeft = col * pieceWidth;
+                    
+                    // Verificar se a peça está na posição correta (com margem de tolerância)
+                    const tolerance = Math.min(pieceWidth, pieceHeight) * 0.1;
+                    if (Math.abs(top - correctTop) < tolerance && Math.abs(left - correctLeft) < tolerance) {
+                        piece.classList.add('correct');
+                        
+                        // Ajustar para posição exata
+                        piece.style.top = `${correctTop}px`;
+                        piece.style.left = `${correctLeft}px`;
+                    } else {
+                        solved = false;
+                        piece.classList.remove('correct');
+                    }
+                });
+                
+                // Se o puzzle estiver resolvido
+                if (solved) {
+                    clearInterval(timer);
+                    isPlaying = false;
+                    
+                    // Mostrar a mensagem de vitória
+                    completionTimeSpan.textContent = timeDisplay.textContent;
+                    victoryModal.style.display = 'flex';
+                    
+                    // Mostrar confetes
+                    createConfetti();
+                }
+            }
+            
+            // Criar confetes
+            function createConfetti() {
+                const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+                
+                for (let i = 0; i < 100; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.left = `${Math.random() * 100}%`;
+                        confetti.style.animationDuration = `${3 + Math.random() * 2}s`;
+                        document.body.appendChild(confetti);
+                        
+                        // Remover o confete após a animação
+                        setTimeout(() => {
+                            confetti.remove();
+                        }, 5000);
+                    }, i * 20);
+                }
+            }
+            
+            // Reiniciar o quebra-cabeça
+            function resetPuzzle() {
+                clearInterval(timer);
+                isPlaying = false;
+                seconds = 0;
+                updateTimer();
+                puzzleContainer.innerHTML = '';
+            }
+            
+            // Resolver o quebra-cabeça
+            function solvePuzzle() {
+                if (!isPlaying) return;
+                
+                const containerWidth = puzzleContainer.clientWidth;
+                const containerHeight = puzzleContainer.clientHeight;
+                const pieceWidth = containerWidth / size;
+                const pieceHeight = containerHeight / size;
+                
+                pieces.forEach((piece) => {
+                    const row = parseInt(piece.dataset.row);
+                    const col = parseInt(piece.dataset.col);
+                    
+                    piece.style.top = `${row * pieceHeight}px`;
+                    piece.style.left = `${col * pieceWidth}px`;
+                    piece.classList.add('correct');
+                });
+                
+                // Verificar a solução
+                setTimeout(checkSolution, 500);
+            }
+            
+            // Lidar com redimensionamento
+            function handleResize() {
+                if (isPlaying) {
+                    // Reiniciar o jogo quando a tela é redimensionada
+                    const savedSize = size;
+                    resetPuzzle();
+                    size = savedSize;
+                    createPuzzle();
+                    shufflePieces();
+                }
+            }
+            
+            // Adicionar listener para redimensionamento
+            window.addEventListener('resize', handleResize);
+            
+            // Inicializar o jogo
+            function init() {
+                // Adicionar eventos aos botões
+                startBtn.addEventListener('click', startGame);
+                resetBtn.addEventListener('click', resetPuzzle);
+                solveBtn.addEventListener('click', solvePuzzle);
+                toggleReferenceBtn.addEventListener('click', toggleReference);
+                
+                nextPuzzleBtn.addEventListener('click', () => {
+                    victoryModal.style.display = 'none';
+                    currentImage = (currentImage + 1) % images.length;
+                    selectImage(currentImage);
+                    startGame();
+                });
+                
+                closeModalBtn.addEventListener('click', () => {
+                    victoryModal.style.display = 'none';
+                });
+                
+                // Inicializar os botões de seleção de imagem
+                initImageButtons();
+            }
+            
+            // Iniciar o jogo
+            init();
+        });
+    </script>
+</body>
+</html>
